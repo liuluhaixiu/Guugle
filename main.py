@@ -3,13 +3,9 @@ import pandas as pd
 from tqdm import tqdm
 from loguru import logger
 import thread
-keypool = [
-    ["AIzaSyC1DlWA5nf-qAj39sxHO4OwMJ8iCQ31ncg","31cada641ddb84fc4"]
-    ,["AIzaSyDYYOKoWMChmUmIVhQ01bWZkdHaNKGJIhg","90482127411f34fc9"]
-]
+
 import time
 df = thread.creatdf()
-words = file.openwordsfile()
 langs = words.columns[1:]
 sum = 0
 keynum = 1

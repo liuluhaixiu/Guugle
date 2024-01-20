@@ -112,7 +112,7 @@ def getsingle(q:str,lang:str,num:int,start:int,key:str,cx:str,word:str):
         return None
     response = api(q,find_keys_by_value(langdict_reverse,lang),num,start,key,cx)
     if response:
-        file.savejson(response)
+        # file.savejson(response)
         for item in response:
             result.append([word,lang.replace("语",""),item["displayLink"],lang,item["snippet"],item["link"]])
         return result
