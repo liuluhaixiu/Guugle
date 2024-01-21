@@ -1,11 +1,22 @@
 from trans_api import api
 import pandas as pd
 import thread
-from tqdm import tqdm
+# from tqdm import tqdm
 from time import sleep
-from loguru import logger
+# from loguru import logger
 import argparse
 import file
+import sys
+def progress_bar(total, progress):
+    # 初始化进度条
+    progress += 1
+    bar_length = 20
+    percent = progress * 100.0 / total
+    arrow = '-' * int(percent/100 * bar_length - 1) + '>'
+    spaces = ' ' * (bar_length - len(arrow))
+
+    sys.stdout.write('\rProgress: [%s%s] %d %%' % (arrow, spaces, percent))
+    sys.stdout.flush()
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -13,10 +24,12 @@ def parse_args():
     return parser.parse_args()
 #接收参数
 args = parse_args()
+print("处理翻译中...")
+languages = ['中文', '英语', '日语', '韩语', '俄语', '阿拉伯语', '西班牙语', '法语',
+             '德语', '意大利语', '葡萄牙语', '荷兰语', '波兰语', '芬兰语', '捷克语',
+             '瑞典语', '丹麦语', '挪威语', '希腊语', '匈牙利语', '土耳其语', '印度尼西亚语']
 if not args.direct:
-    languages = ['中文','英语'	,'日语','韩语',	'俄语'	,'阿拉伯语',	'西班牙语',	'法语',
-                 '德语'	,'意大利语'	,'葡萄牙语'	,'荷兰语'	,'波兰语'	,'芬兰语',	'捷克语'	,
-                 '瑞典语','丹麦语'	,'挪威语','希腊语','匈牙利语',	'土耳其语'	,'印度尼西亚语']
+
     df = pd.DataFrame(columns=languages,index = None)
     langdict_reverse = {
     "ar":"阿拉伯语",
@@ -101,8 +114,9 @@ if not args.direct:
         exit()
 
     for i in range(len(words)):
-        logger.info("handling " + words[i] + " {}\{}".format(i,len(words)))
-        for lang in tqdm(languages):
+        print("翻译 " + words[i] + " {}\{}".format(i,len(words)))
+        for k,lang in enumerate(languages):
+            progress_bar(len(languages),k)
             try:
                 fanyi = api(words[i],find_keys_by_value(lang))[0]
                 df.loc[i,lang] = fanyi
@@ -113,20 +127,22 @@ if not args.direct:
     # df.iloc[0,0] = None
     df.to_excel("words.xlsx",sheet_name='Sheet1',index=False)
     words = df
+    print("\n翻译处理结束...初始化metasearch...")
 else:
     words = file.openwordsfile()
-
+    print("\n翻译跳过...直接处理words.xlsx...")
 df = thread.creatdf()
-langs = words.columns[1:]
+langs = languages[1:]
 sum = 0
 keynum = 1
 keys = file.getkeylist()
 import random
-for i in range(7,15):
+for i in range(len(words)):
     try:
-        print("处理词语:"+words.iloc[i,0])
+        print("搜索词语:"+words.iloc[i,0]+"进度{}/{}".format(i,len(words)))
 
-        for lang in tqdm(langs): #21种语言
+        for k,lang in enumerate(langs): #21种语言
+            progress_bar(len(langs),k)
             for offset in range(2):#前20条内容=> 每个词42次请求
                 try:
                     key, cx, keys = file.getkey(keys)
@@ -136,10 +152,11 @@ for i in range(7,15):
                     sum += 1
                 except:
                     file.savekey(keys)
-                    logger.debug("处理词语"+words.iloc[i,0]+"时出现错误,请求量{},密钥池{}".format(sum,keynum))
+                    print("!!!处理词语"+words.iloc[i,0]+"时出现错误,请求量{},密钥池{}\n".format(sum,keynum))
     except:
         pass
 
 file.savekey(keys)
 file.saveresult(df)
+print('\n=====运行完毕！=====\n成功查询{}次\n失败{}次'.format(sum,len(df)*2*21-sum))
 
