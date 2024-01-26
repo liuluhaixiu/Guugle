@@ -21,6 +21,7 @@ def progress_bar(total, progress):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', '--direct', action='store_true', help='set direct to True,pass translating progress')
+    parser.add_argument('-x', '--xlsx', action='store_true', help='set xlsx to True,focus on search organized infomation')
     return parser.parse_args()
 #接收参数
 args = parse_args()
@@ -146,7 +147,10 @@ for i in range(len(words)):
             for offset in range(2):#前20条内容=> 每个词42次请求
                 try:
                     key, cx, keys = file.getkey(keys)
-                    data = thread.getsingle(words.loc[i,lang],lang,10,1+offset*10,key,cx,words.iloc[i,0])
+                    s = words.loc[i,lang]
+                    if args.xlsx:
+                        s += " filetype:xlsx OR filetype:xls OR filetype:csv"
+                    data = thread.getsingle(s,lang,10,1+offset*10,key,cx,words.iloc[i,0])
                     df = df.append(pd.DataFrame(data, columns=df.columns), ignore_index=True)
                     sleep(random.uniform(1, 3))
                     sum += 1
