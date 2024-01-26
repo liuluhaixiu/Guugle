@@ -19,5 +19,8 @@ Guugle is a link spider which is used to search information in tons of languages
 
 # 参数:
 -d/--direct:如果之前已经完成了第一阶段(翻译)
+-x/--xslx 使用googlehacking来搜索存在表格文件的网站
+-p/--pdf 使用googlehacking搜索存在pdf的网站
+
 
 # 持续更新中...
