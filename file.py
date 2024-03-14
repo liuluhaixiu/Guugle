@@ -4,19 +4,21 @@ import json
 import os
 def openwordsfile():
     file = None
-    try:
-        file = pd.read_excel("words.xlsx",sheet_name="Sheet1")
-    except:
-        logger.error("cant find words list")
+    # try:
+    file = pd.read_excel("words.xlsx",sheet_name="Sheet1")
+    # except:
+    #     logger.error("cant find words list")
     return file
 
 def saveresult(pd:pd.DataFrame):
     results = os.listdir("result")
     if results :
         namelist = sorted([int(x[6:-4]) for x in results])
-        pd.to_csv("./result/result"+str(namelist[-1]+1)+".csv")
+        savename = "./result/result"+str(namelist[-1]+1)+".csv"
     else:
-        pd.to_csv("./result/result1.csv")
+        savename = "./result/result1.csv"
+    pd.to_csv(savename)
+    return savename
 
 #备份json文件
 def savejson(jsonfile):
@@ -35,14 +37,15 @@ def savejson(jsonfile):
 import time
 def getkeylist():
     df = None
-    try:
+    # try:
+    if 1==1:
         df = pd.read_csv("keys.csv")
         for i in range(len(df)):
             if time.time() - df.iloc[i, 3] > 60 * 60 * 24 and df.iloc[i, 2] < 100:
                 df.iloc[i, 2] = 100
                 df.iloc[i, 3] = time.time()
-    except:
-        logger.error("cant keylist")
+    # except:
+    #     logger.error("cant keylist")
     return df
 
 #在keylist中得到一个key,同时减次数
