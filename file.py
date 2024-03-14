@@ -17,7 +17,7 @@ def saveresult(pd:pd.DataFrame):
         savename = "./result/result"+str(namelist[-1]+1)+".csv"
     else:
         savename = "./result/result1.csv"
-    pd.to_csv(savename)
+    pd.to_csv(savename,encoding='utf-8')
     return savename
 
 #备份json文件

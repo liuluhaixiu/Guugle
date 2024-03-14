@@ -45,6 +45,9 @@ def creatdf():
 def creatdf_country():
     list = ['中文原词','网址','国家','站点内容','命中url']
     return pd.DataFrame(columns=list)
+def creatdf_normal():
+    list = ['中文原词','网址','站点内容','命中url']
+    return pd.DataFrame(columns=list)
 #api调用每次10条，每天调用100次 num最大值为10 start最大值为90
 url = "https://customsearch.googleapis.com/customsearch/v1?" \
       "key={}" \
@@ -56,14 +59,12 @@ url = "https://customsearch.googleapis.com/customsearch/v1?" \
 import colorama
 def api(q,lr,num,start,key,cx):
     response = eval(requests.get(url.format(key,cx,lr,q,num,start)).text)
-
     if "items" in dict(response).keys():
         return response["items"]
-    else:
-        print(colorama.Fore.RED+"[Error] api wrong:"+ url.format(key,cx,q,num,start))
-        print("If this shows permanently,check your agent settings or internet connection")
-        print(colorama.Style.RESET_ALL)
-
+    # else:
+    #     print(colorama.Fore.RED+"[Error] api wrong:"+ url.format(key,cx,q,num,start))
+    #     print("If this shows permanently,check your agent settings or internet connection")
+    #     print(colorama.Style.RESET_ALL)
 def api_country(q,num,start,key,cx):
     url2 = "https://customsearch.googleapis.com/customsearch/v1?" \
           "key={}" \
@@ -72,15 +73,8 @@ def api_country(q,num,start,key,cx):
           "&num={}" \
           "&start={}"
     response = eval(requests.get(url2.format(key,cx,q,num,start)).text)
-
     if "items" in dict(response).keys():
-
         return response["items"]
-    else:
-        logger.error("api wrong")
-        print("\n===================uri===================\n")
-        print(url.format(key,cx,q,num,start))
-        exit()
 def find_keys_by_value(dic,value):
     keys = [key for key,val in dic.items() if val == value]
     if value == None:
@@ -111,7 +105,6 @@ def lang_getsingle(q:str,lang,num:int,start:int,key:str,cx:str,word:str):
                 pass
             result.append([word,displayLink,langdict_reverse[lang],snippet,link])
         return result
-    logger.debug("{} 请求失败".format(q))
     return None
 
 def country_getsingle(q:str,country,num:int,start:int,key:str,cx:str,word:str):
@@ -136,9 +129,31 @@ def country_getsingle(q:str,country,num:int,start:int,key:str,cx:str,word:str):
                 pass
             result.append([word,displayLink,country,snippet,link])
         return result
-    logger.debug("{} 请求失败".format(q))
     return None
 
+def normal_getsingle(q:str,num:int,start:int,key:str,cx:str,word:str):
+    result = []
+    response = api_country(q, num, start, key, cx)
+    if response:
+        for item in response:
+            displayLink = ""
+            snippet = ""
+            link = ""
+            try:
+                displayLink = item["displayLink"]
+            except:
+                pass
+            try:
+                snippet = item["snippet"]
+            except:
+                pass
+            try:
+                link = item["link"]
+            except:
+                pass
+            result.append([word,displayLink,snippet,link])
+        return result
+    return None
 def handlejson():
     import os
     import json

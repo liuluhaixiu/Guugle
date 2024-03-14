@@ -1,0 +1,7 @@
+colorama==0.4.6
+loguru==0.7.2
+pandas==1.4.2
+Requests==2.31.0
+rich==13.7.1
+thread==1.0.1
+tqdm==4.66.2

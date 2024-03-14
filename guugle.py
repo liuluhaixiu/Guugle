@@ -53,71 +53,38 @@ args = parse_args()
 syntax = ""
 langdict_reverse = {
     "ar":"阿拉伯语",
-
     "bg":"保加利亚语",
-
     "ca":"加泰罗尼亚语",
-
     "cs":"捷克语",
-
     "da":"丹麦语",
-
     "de":"德语",
-
     "el":"希腊语",
-
     "en":"英语",
-
     "es":"西班牙语",
-
     "et":"爱沙尼亚语",
-
     "fi":"芬兰语",
-
     "fr":"法语",
-
     "hr":"克罗地亚语",
-
     "hu":"匈牙利语",
-
     "id":"印度尼西亚语",
-
     "is":"冰岛语",
-
     "it":"意大利语",
-
     "iw":"希伯来语",
-
     "ja":"日语",
-
     "ko":"韩语",
-
     "lt":"立陶宛语",
-
     "lv":"拉脱维亚语",
-
     "nl":"荷兰语",
-
     "no":"挪威语",
-
     "pl":"波兰语",
-
     "pt":"葡萄牙语",
-
     "ro":"罗马尼亚语",
-
     "ru":"俄语",
-
     "sk":"斯洛伐克语",
-
     "sl":"斯洛文尼亚语",
-
     "sr":"塞尔维亚语",
-
     "sv":"瑞典语",
-
     "tr":"土耳其语",
-
     }
 if args.info:
     console = Console()
@@ -153,7 +120,7 @@ if args.a:
     print(colorama.Style.RESET_ALL)
     exit()
 if args.syntax:
-    syntax += args.syntax
+    syntax = syntax+" "+args.syntax
 if args.lang or args.direct:
     if not args.direct:
         console = Console()
@@ -264,7 +231,7 @@ if args.lang or args.direct:
                     s = words.loc[i, lang]
                     s += syntax
                     data = google_api.lang_getsingle(s, lang, 10, 1 + offset * 10, key, cx, words.iloc[i, 0])
-                    df = df.append(pd.DataFrame(data, columns=df.columns), ignore_index=True)
+                    df = pd.concat([df,pd.DataFrame(data, columns=df.columns)])
                     sleep(0.5)
                     sucesssum += 1
                 except:
@@ -405,10 +372,13 @@ if args.country:
                 try:
                     key, cx, keys = file.getkey(keys)
                     s = words[i]
-                    s+="site:.{}".format(country)
+                    s += " site:.{}".format(country)
                     s += syntax
+                    # print(s)
+                    # os._exit(0)
                     data = google_api.country_getsingle(s,country, 10, 1 + offset * 10, key, cx, words[i])
-                    df = df.append(pd.DataFrame(data, columns=df.columns), ignore_index=True)
+                    # df = df.append(pd.DataFrame(data, columns=df.columns), ignore_index=True)
+                    df = pd.concat([df,pd.DataFrame(data, columns=df.columns)])
                     sleep(0.5)
                     sucesssum += 1
                 except:
@@ -423,4 +393,68 @@ if args.country:
     savename = file.saveresult(df)
     print('\n=========Process Finished！=========\n[SUM] success time:{},error time:{}'.format(sucesssum, wrongsum))
     print(colorama.Fore.GREEN + "[info] result saved to '{}'".format(savename))
+    print(colorama.Style.RESET_ALL)
+if (not args.country) and (not args.lang):
+    print(colorama.Fore.MAGENTA + "Step1:Please input the original words(file name or words separated with ',' :")
+    print(colorama.Style.RESET_ALL)
+    source_str = input()
+    words = ['']
+    if "." in source_str:
+        try:
+            f = open(source_str, encoding="utf-8")
+            words = f.readlines()
+        except:
+            print(
+                colorama.Fore.RED + "[Error]Failed to open the file. Please check whether the file is entered correctly")
+            print(colorama.Style.RESET_ALL)
+            exit()
+    else:
+        words = source_str.split(",")
+    if words == ['']:
+        print(colorama.Fore.RED + "[Error]No search term, program ends")
+        print(colorama.Style.RESET_ALL)
+        exit()
+    print(colorama.Fore.MAGENTA + "Step2:Please input the page to scrape for every words(max=10) ',' :")
+    pagenum = int(input())
+    if pagenum < 1:
+        print(colorama.Fore.RED + "[Error]Need value >= 1")
+        print(colorama.Style.RESET_ALL)
+        exit()
+    os.system('cls' if os.name == 'nt' else 'clear')
+    logo()
+    print("================Program started!================")
+    df = google_api.creatdf_normal()
+    sucesssum = 0
+    wrongsum = 0
+    keys = file.getkeylist()
+    for i in range(len(words)):
+        os.system('cls' if os.name == 'nt' else 'clear')
+        logo()
+        print(colorama.Fore.RED)
+        print("[Mode] Normal")
+        print("[Info] Guugling word:" + words[i] + "  ==> process:[{}/{}]".format(i, len(words)))
+        print(colorama.Style.RESET_ALL)
+        for offset in range(pagenum):
+                progress_bar(pagenum, offset)
+                try:
+                    key, cx, keys = file.getkey(keys)
+                    s = words[i]
+                    s += syntax
+                    data = google_api.normal_getsingle(s, 10, 1 + offset * 10, key, cx, words[i])
+                    df = pd.concat([df,pd.DataFrame(data, columns=df.columns)])
+                    sleep(0.5)
+                    sucesssum += 1
+                except:
+                    file.savekey(keys)
+                    wrongsum += 1
+                    print(colorama.Fore.RED + "[Error] occured when handling " + colorama.Fore.MAGENTA + words[
+                        i] + colorama.Fore.RED + ",SUM success time:{},error time:{}".format(sucesssum,
+                                                                                             wrongsum))
+                    print(colorama.Style.RESET_ALL)
+
+    file.savekey(keys)
+    savename = file.saveresult(df)
+    print('\n=========Process Finished！=========\n[SUM] success time:{},error time:{}'.format(sucesssum, wrongsum))
+    print(colorama.Fore.GREEN + "[info] result saved to '{}'".format(savename))
+    print(colorama.Style.RESET_ALL)
 
